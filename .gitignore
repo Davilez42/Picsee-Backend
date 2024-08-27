@@ -1,0 +1,8 @@
+/node_modules
+/target
+.env
+/logs
+/docs
+generateTokenTestcontroller.js
+tempPic.jpg
+copyenv.txt
