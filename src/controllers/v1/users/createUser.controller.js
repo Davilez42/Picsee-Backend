@@ -12,7 +12,7 @@ const createUserController = async (req, res) => {
     const { username, password, email, firstNames, lastNames } = req.body;
     const passwordHash = await encrypt_(password)
     const userId = uuid()
-    await userRepository.create({ userId, username, password: passwordHash, email, firstNames, lastNames });
+    await userRepository.create({ userId, username, password: passwordHash, email, firstNames, lastNames, urlAvatar: process.env.DEFAULT_AVATAR_URL });
     const accessToken = generateToken({ userId, username });
 
     return res.status(200).json({

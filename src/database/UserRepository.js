@@ -34,7 +34,7 @@ class UserRepository {
 
     try {
       const respDb = await client.query(
-        `INSERT INTO users (user_id,username,first_name,last_name,email,password,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING user_id`,
+        `INSERT INTO users (user_id,username,first_name,last_name,email,password,url_avatar,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING user_id`,
         [
           user.userId,
           user.username,
@@ -42,6 +42,7 @@ class UserRepository {
           user.lastNames,
           user.email,
           user.password,
+          user.urlAvatar,
           new Date().toISOString(),
         ]
       );
