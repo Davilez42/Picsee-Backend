@@ -2,14 +2,14 @@ const sharp = require('sharp')
 class ImageProcessing {
 
     static async process(images) {
-        let img_proc = []
+        const imgProc = []
         for (const i in images) {
             const img = images[i]
             //TODO
-            img_proc.push(img)
+            imgProc.push(img)
         }
 
-        return img_proc
+        return imgProc
     }
 
 }

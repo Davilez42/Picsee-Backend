@@ -1,12 +1,13 @@
 SERVER_CONFIG = {
-  logger: true,
+  logger: process.env.LOGGER,
   HOST: "localhost",
   PORT: 8000,
 };
 
 CONFIG_CORS = {
   origin: true,
-  credentials: true
+  credentials: true,
+  exposedHeaders: ['Meta-Data']
 };
 
 IMAGE_KIT_CONFIG = {

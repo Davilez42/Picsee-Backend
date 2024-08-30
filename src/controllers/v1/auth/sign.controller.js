@@ -3,31 +3,36 @@ const generateTokenTool = require("../../../tools/generateToken.tool");
 const { userRepository } = require('../../../database/dependencies');
 const errorHandler = require("../../../tools/errorHandler");
 const PasswordIncorrect = require("../../../exceptions/PasswordIncorrect");
+const UserNotFound = require("../../../exceptions/UserNotFound");
 
 
 const signController = async (req, res) => {
-  //* Controlador for login user
-
-  const { username, password } = req.body;
   try {
-    const user_bd = await userRepository.find(username);
+    const { user, password } = req.body;
 
-    if (!(await compare_(user_bd.password, password))) {
+    const userFound = await userRepository.findCredentials(user);
+
+    if (!userFound) {
+      throw new UserNotFound(user)
+    }
+
+    if (!(await compare_(userFound.password, password))) {
       throw new PasswordIncorrect()
     }
-    const access_token = generateTokenTool({
-      id_user: user_bd.id_user,
-      username: user_bd.username,
+    const accessToken = generateTokenTool({
+      userId: userFound.userId,
+      username: userFound.username,
     });
 
 
-    return res.header("auth", access_token).json({
+    return res.json({
       state: 'ok',
-      id_user: user_bd.id_user,
-      url_avatar: user_bd.url,
-      username: user_bd.username,
-      password: true,
-      token: access_token
+      data: {
+        userId: userFound.userId,
+        urlAvatar: userFound.urlAvatar,
+        username: userFound.username,
+        token: accessToken
+      }
     });
   }
   catch (e) {

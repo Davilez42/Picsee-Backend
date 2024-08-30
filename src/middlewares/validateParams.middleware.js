@@ -4,14 +4,14 @@ const errorHandler = require("../tools/errorHandler");
 const { json } = require("express");
 
 const validateSign = (req, res, next) => {
-  const { username, password } = req.body;
+  const { user, password } = req.body;
   try {
-    if (!username || !password) {
+    if (!user || !password) {
       throw new InvalidBody(
         "Faltan  claves"
       );
     }
-    if (username.trim() === "" || password.toString().length == 0) {
+    if (user.trim() === "" || password.toString().length == 0) {
       throw new InvalidBody(
         "Los campos no pueden estar vacios"
       );
@@ -28,16 +28,16 @@ const validateSign = (req, res, next) => {
 };
 
 const validateCreateUser = (req, res, next) => {
-  const { username, password, email, first_names, last_names } = req.body;
+  const { username, password, email, firstNames, lastNames } = req.body;
   console.log(req.body);
   try {
     if (
-      [username, first_names, last_names, email, password].includes(undefined)
+      [username, firstNames, lastNames, email, password].includes(undefined)
     ) {
       throw new InvalidBody('Faltan keys');
     }
 
-    [username, first_names, last_names, email, password].forEach((d) => {
+    [username, firstNames, lastNames, email, password].forEach((d) => {
       if (d.trim() === "") {
         throw new InvalidBody(
           "Los campos no pueden estar vacios"
@@ -63,7 +63,9 @@ const validateCreateUser = (req, res, next) => {
 
 const validateUploadPost = async (req, res, next) => {
   try {
-    let photos = req.files?.photos
+
+    let photos = req.files
+
     if (!photos) {
       throw new InvalidBody("No se encuentran fotos para subir");
     }
@@ -84,8 +86,8 @@ const validateUploadPost = async (req, res, next) => {
       if (sizeTotal > 20000000) {
         throw new Error('Error: El tamaño supera 20mb')
       }
-      const metadata = await sharp(f.data).metadata()
-
+      const metadata = await sharp(f.buffer).metadata()
+      console.log(metadata);
       if (!(metadata.width >= 2739 && metadata.height >= 1826)) {
         throw new InvalidBody('Porfavor sube minimo imagenes de 5MP')
       }
@@ -95,14 +97,15 @@ const validateUploadPost = async (req, res, next) => {
     //tags
     const { tags } = req.body
     if (tags) {
-      const _json = JSON.parse(tags)
-      for (const k in _json) {
-        if (!Array.isArray(_json[k])) {
+
+      const tagsArrayJson = JSON.parse(tags)
+      for (let i = 0; i < tagsArrayJson.length; i++) {
+        if (!Array.isArray(tagsArrayJson[i])) {
           throw new InvalidBody('Los tags deben de estar en una lista')
         }
       }
+      req.body.tags = tagsArrayJson
     }
-
 
     next()
   } catch (e) {
@@ -112,18 +115,6 @@ const validateUploadPost = async (req, res, next) => {
 
 
 
-
-const validateIdPost = (req, res, next) => {
-  const { id_post } = req.params;
-  try {
-    if (!Number.isInteger(parseInt(id_post))) {
-      throw new InvalidBody("Formato de Id incorrecto");
-    }
-    next();
-  } catch (e) {
-    errorHandler(e, req, res)
-  }
-};
 
 
 const validateUpdateUser = (req, res, next) => {
@@ -150,6 +141,5 @@ module.exports = {
   validateSign,
   validateCreateUser,
   validateUploadPost,
-  validateIdPost,
   validateUpdateUser
 };

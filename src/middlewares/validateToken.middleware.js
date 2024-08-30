@@ -1,22 +1,12 @@
-const { verify, decode, JsonWebTokenError } = require("jsonwebtoken");
+const { verify } = require("jsonwebtoken");
 const errorHandler = require("../tools/errorHandler");
 require("dotenv").config();
 
 const validateToken = async (req, res, next) => {
   try {
-
-    const token = req.headers["auth"];
-
-    if (!token) {
-      throw new JsonWebTokenError()
-
-    }
-
-    verify(token, process.env.JWT_KEY_SECRET);
-
-    const userData = decode(token);
-
-    req.id_user = userData.id_user
+    const token = req.headers.auth
+    const data = verify(String(token), process.env.JWT_KEY_SECRET);
+    req.userId = data.userId
     next();
   } catch (e) {
     errorHandler(e, req, res)

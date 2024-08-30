@@ -6,7 +6,8 @@ const { routeNotFound, errorHandlerApp } = require('./middlewares/defaultHandler
 const logger = require("./middlewares/logger.middleware");
 
 const app = express();
-if (SERVER_CONFIG.logger) {
+
+if (Boolean(Number(SERVER_CONFIG.logger))) {
     app.use(logger)
 }
 

@@ -5,15 +5,11 @@ class TagRepository {
   async get() {
     const dbconnection = await this.pool.connect(); // obtengo una conexion
     const data = await dbconnection.query(`
-        SELECT tag.id_tag, tag.name
+        SELECT tag.tag_id, tag.name
         FROM tags tag
         order by name DESC`);
     dbconnection.release();
     return data.rows;
-  };
-
-  async create(idPosts, tags = {}) {
-    throw new Error('Not implemented')
   };
 
 }

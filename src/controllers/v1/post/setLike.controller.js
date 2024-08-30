@@ -10,7 +10,7 @@ const likeController = async (req, res) => {
 
   try {
     await postRepository.setLike(id_post, id_user);
-    return res.sendStatus(200);
+    return res.sendStatus(204);
   } catch (e) {
     errorHandler(e, req, res)
   }

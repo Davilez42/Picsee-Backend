@@ -1,6 +1,6 @@
 const { userRepository } = require("../../../database/dependencies.js");
 
-const imageKitIio = require("../../../microservices/imageKit/imageKitIo.service.js");
+const imageKitIio = require("../../../services/imageKit/imageKitIo.service.js");
 const { IMAGE_KIT_CONFIG } = require("../../../../configs/config.js");
 const errorHandler = require("../../../tools/errorHandler.js");
 

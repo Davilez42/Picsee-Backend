@@ -1,6 +1,6 @@
 const { userRepository } = require("../../../database/dependencies");
 const genareteToken = require("../../../tools/generateToken.tool");
-const { validateCredentialsGoogle } = require("../../../microservices/googleTokenValidation/validationTokenGoogle");
+const { validateCredentialsGoogle } = require("../../../services/googleTokenValidation/validationTokenGoogle");
 const errorHandler = require("../../../tools/errorHandler");
 const InvalidBody = require("../../../exceptions/InvalidBody");
 require("dotenv").config();
