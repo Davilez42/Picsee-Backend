@@ -30,10 +30,11 @@ class UserRepository {
   };
 
   async create(user) {
-    const dbConnection = await this.pool.connect();
+    const client = await this.pool.connect();
+
     try {
-      const respDb = await dbConnection.query(
-        `INSERT INTO users (user_id,username,first_name,last_name,email,password,created_at) VALUES (?,?,?,?,?,?,?) RETURNING user_id`,
+      const respDb = await client.query(
+        `INSERT INTO users (user_id,username,first_name,last_name,email,password,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING user_id`,
         [
           user.userId,
           user.username,
@@ -41,7 +42,7 @@ class UserRepository {
           user.lastNames,
           user.email,
           user.password,
-          new Date(),
+          new Date().toISOString(),
         ]
       );
       return respDb.rows[0].user_id;
@@ -49,7 +50,7 @@ class UserRepository {
       throw e.code === '23505' ? new DataAlreadyExist(e.constraint.split('idx_')[1]) : e
     }
     finally {
-      dbConnection.release();
+      client.release();
     }
   };
 

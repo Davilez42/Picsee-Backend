@@ -11,9 +11,8 @@ const createUserController = async (req, res) => {
   try {
     const { username, password, email, firstNames, lastNames } = req.body;
     const passwordHash = await encrypt_(password)
-
-    await userRepository.create({ userId, username, password: passwordHash, email, firstNames, lastNames });
     const userId = uuid()
+    await userRepository.create({ userId, username, password: passwordHash, email, firstNames, lastNames });
     const accessToken = generateToken({ userId, username });
 
     return res.status(200).json({
