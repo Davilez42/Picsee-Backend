@@ -1,6 +1,6 @@
-# Api-rest PicMont
+# Api-rest Picsee
 
-### Web site https://picmon.onrender.com
+### Web site https://picsee-backend.onrender.com
 
 ### V1.1.1
 ![GitHub Streak](https://img.shields.io/badge/javascript-yellow?style=for-the-badge&logo=javascript&logoColor=yellow&labelColor=5f6368)
@@ -9,14 +9,14 @@
 ![GitHub Streak](https://img.shields.io/badge/express-white?style=for-the-badge&logo=express&logoColor=white&labelColor=5f6368)
 
 ## Description
-api rest picmont, made in node js and express
+api rest picsee, made in node js and express
 
 ### Installation:
-- git clone <b> https://github.com/Davilez42/Picmont.git </b>
+- git clone <b> https://github.com/Davilez42/Picsee-Backend.git</b>
 - npm install
 - npm run dev
 
-### Note: the service will operate on the following route -> http://localhost:5000/api/v1</b>
+### Note: the service will operate on the following route -> http://localhost8000/api/v1</b>
 
 # Features
 - uploading of a maximum of 4 images per upload
