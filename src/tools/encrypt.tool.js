@@ -1,12 +1,13 @@
 
 const bcryptjs = require('bcryptjs')
 
-const compare_ = (password_encrypt, password_textplain) => {
-  return bcryptjs.compare(password_textplain, password_encrypt)
+const compare_ = (passwordHash, password) => {
+  return bcryptjs.compare(password, passwordHash)
 }
 
 const encrypt_ = async (data) => {
-  return await bcryptjs.hash(data, 13)
+  const randomSalt = await bcryptjs.genSalt()
+  return await bcryptjs.hash(data, randomSalt)
 }
 
 module.exports = {
