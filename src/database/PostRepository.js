@@ -41,7 +41,7 @@ class PostRepository {
       let i = 1
       for (const pair of criteria) {
         if (pair[0] === 'query') {
-          params.push(`(description = $${i} or t.name ilike '%${pair[1]}%')`)
+          params.push(`(description = $${i} or t.name ilike '%${pair[1]}%' or us.username ilike '% ${pair[1]}%')`)
           values.push(pair[1])
           i += 1
           continue
