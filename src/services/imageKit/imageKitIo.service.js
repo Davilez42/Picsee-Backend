@@ -2,7 +2,6 @@ const ImageKit = require("imagekit");
 const { IMAGE_KIT_CONFIG } = require("../../../configs/config");
 const FailedUploadImageKit = require("../../exceptions/FailedUploadImageKit");
 const imagekit = new ImageKit(IMAGE_KIT_CONFIG);
-const { getFormat, getName } = require('../../tools/getFormat')
 
 const _upload = async (files, path, tags = []) => {
   try {

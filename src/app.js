@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-require('dotenv').config()
+require('dotenv').config({ path: '.env' })
 const { CONFIG_CORS, SERVER_CONFIG } = require("../configs/config");
 const { routeNotFound, errorHandlerApp } = require('./middlewares/defaultHandlers.middleware')
 const logger = require("./middlewares/logger.middleware");

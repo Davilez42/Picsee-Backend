@@ -16,9 +16,9 @@ const limiter = rateLimit({
 });
 
 router.post('/', validateToken, upload.array('photos', 5), validateUploadPost, uploadPostController)
-router.get('/', getPostsController)
+router.get('/', validateToken, getPostsController)
 router.get('/:post_id/download', downloadPostController)
 router.get('/tags', getTagsController)
-router.patch('/:post_id/like', limiter, validateToken, likeController)
+router.post('/:postId/like', limiter, validateToken, likeController)
 
 module.exports = router

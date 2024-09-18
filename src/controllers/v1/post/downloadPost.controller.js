@@ -1,5 +1,4 @@
 const { postRepository } = require('../../../database/dependencies')
-const axios = require('axios')
 const request = require('postman-request')
 const errorHandler = require('../../../tools/errorHandler')
 
