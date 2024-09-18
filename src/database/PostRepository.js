@@ -1,6 +1,7 @@
 const UserNotFound = require("../exceptions/UserNotFound");
 const PostNotFound = require("../exceptions/PostNotFound");
 const { v4: uuid } = require('uuid');
+const { post } = require("postman-request");
 
 class PostRepository {
   constructor(pool) {
@@ -33,7 +34,7 @@ class PostRepository {
   }
 
 
-  async get(criteria) {
+  async get(criteria, externalId) {
     const client = await this.pool.connect();
     try {
       const params = []
@@ -66,7 +67,6 @@ class PostRepository {
           continue
         }
       }
-      // console.log(params.join(' and '), values);
 
       const query = `
           SELECT 
@@ -76,14 +76,16 @@ class PostRepository {
           p.likes,
           json_build_object('id',us.user_id,'username',us.username,'urlAvatar',us.url_avatar)  as author,
           json_build_object('url',img.url,'format',img.format) as image,
-          json_agg(t.name) as tags
+          json_agg(t.name) as tags,
+          (lk.user_id is not NUll) as liked
           FROM posts p 
           JOIN users us on p.user_id =  us.user_id
           JOIN images img on img.post_id = p.post_id
           LEFT join post_tags pt on pt.post_id = p.post_id
           LEFT join tags t on pt.tag_id = t.tag_id
+          LEFT join likes lk on lk.post_id =  p.post_id and lk.user_id = '${externalId}'
           WHERE p.visible = TRUE and us.state = TRUE  and us.deleted = FALSE ${params.length > 0 ? ` and (${params.join(' and ')}) ` : ''}
-          GROUP by p.post_id ,us.user_id, us.username, us.url_avatar, img.url, img.format
+          GROUP by p.post_id ,us.user_id, us.username, us.url_avatar, img.url, img.format, lk.user_id
           ORDER by p.upload_at DESC 
           LIMIT 15`
       // console.log(query);
@@ -102,22 +104,28 @@ class PostRepository {
     const client = await this.pool.connect();
     try {
       const relation = await client.query(
-        `SELECT state FROM posts_users  where id_post = $1 and id_user = $2`, [postId, userId]);
+        `SELECT deleted FROM likes  where post_id = $1 and user_id = $2`, [postId, userId]);
       if (relation.rows.length > 0) {
-        await client.query(
-          `UPDATE posts_users  SET state = $3 where id_post = $1 and id_user = $2`, [postId, userId, !relation.rows[0].state]);
+        await Promise.all([
+          client.query(
+            `UPDATE likes  SET deleted = not deleted where post_id = $1 and user_id = $2`, [postId, userId]),
+          client.query(`UPDATE posts SET likes = likes + ${relation.rows[0].deleted ? 1 : -1} WHERE post_id = $1`, [postId])])
       } else {
-
-        await client.query(
-          `INSERT INTO posts_users  (id_post, id_user)  values($1, $2); `, [postId, userId]);
+        await Promise.all([
+          client.query(
+            `INSERT INTO likes  (post_id, user_id)  values($1, $2); `, [postId, userId]),
+          client.query('UPDATE posts SET likes = likes + 1 WHERE post_id = $1', [postId])
+        ])
       }
+
     }
     catch (error) {
+      await client.query('ROLLBACK;')
       if (error.code === '23503') {
-        if (error.constraint === 'fk_id_post') {
+        if (error.constraint === 'fk_post_id') {
           throw new PostNotFound(postId)
         }
-        if (error.constraint === 'fk_id_user') {
+        if (error.constraint === 'fk_user_id') {
           throw new UserNotFound(userId)
         }
       }

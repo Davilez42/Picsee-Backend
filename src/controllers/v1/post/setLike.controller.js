@@ -3,13 +3,13 @@ const errorHandler = require("../../../tools/errorHandler");
 
 
 const likeController = async (req, res) => {
-
-  //* controller for set like posts
-  const { id_post } = req.params;
-  const id_user = req.id_user
-
   try {
-    await postRepository.setLike(id_post, id_user);
+    const { postId } = req.params;
+
+    const userId = req.userId
+
+    await postRepository.like(postId, userId);
+
     return res.sendStatus(204);
   } catch (e) {
     errorHandler(e, req, res)
