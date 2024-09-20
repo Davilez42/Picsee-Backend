@@ -67,7 +67,7 @@ class PostRepository {
           values.push(new Date(Number(pair[1])))
         } else if (pair[0] === 'query') {
           params.push(`(description = $${i} or t.name ilike $${i} or us.username ilike $${i})`)
-          values.push(`% ${pair[1]} % `)
+          values.push(`%${pair[1]}%`)
         } else if (pair[0] === 'tag') {
           params.push(`(t.name = $${i})`)
           values.push(pair[1])
