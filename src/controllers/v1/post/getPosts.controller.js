@@ -15,11 +15,17 @@ const getPostsController = async (req, res) => {
 
     const userId = req.userId
 
-    const posts = await postRepository.get(criteria, userId);
+    let posts;
+    let cursor
+    if (criteria.has('query') && criteria.get('query') === 'relevant') {
+      posts = await postRepository.getRelevant()
+    } else {
+      posts = await postRepository.get(criteria, userId);
+      const lastPost = posts[posts.length - 1]
+      cursor = lastPost ? lastPost.uploadAt.getTime() : new Date().getTime()
+    }
 
-    const lastPost = posts[posts.length - 1]
-
-    return res.status(200).json({ state: 'ok', data: { posts }, cursor: lastPost ? lastPost.uploadAt.getTime() : new Date().getTime() });
+    return res.status(200).json({ state: 'ok', data: { posts }, cursor });
 
   } catch (e) {
     errorHandler(e, req, res)

@@ -3,9 +3,9 @@ const errorHandler = require("../../../tools/errorHandler.js");
 
 const deleteUserController = async (req, res) => {
   //* controller for delete users
-  const { id_user } = req;
   try {
-    await userRepository.delete(id_user)
+    const userId = req.userId
+    await userRepository.delete(userId)
     res.sendStatus(204);
   } catch (e) {
     errorHandler(e, req, res)
