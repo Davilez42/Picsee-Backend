@@ -7,10 +7,10 @@ const errorHandler = require("../../../tools/errorHandler.js");
 const updateAvatarController = async (req, res) => {
   //* controller for update avatar
 
-  const { id_user } = req;
   const { avatar } = req.files;
   try {
-    const avatarFound = await userRepository.getAvatar(id_user);
+    const userId = req.userId;
+    const avatarFound = await userRepository.getAvatar(userId);
 
     if (avatarFound.id_kitio !== null) {
       await imageKitIio._delete([{ id_cdn: avatarFound.id_kitio }]);
@@ -22,7 +22,7 @@ const updateAvatarController = async (req, res) => {
       IMAGE_KIT_CONFIG.avatars_folder_dest
     );
 
-    await userRepository.updateAvatar(id_user, {
+    await userRepository.updateAvatar(userId, {
       url: data_res[0].url,
       id_kitio: data_res[0].id_kitio,
     });

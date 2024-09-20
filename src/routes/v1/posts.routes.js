@@ -9,15 +9,13 @@ const router = Router()
 const rateLimit = require("express-rate-limit");
 
 const limiter = rateLimit({
-    windowMs: 900,
-    max: 1, //peticiones por  dentro de la ventana de tiempo
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    windowMs: 600,
+    max: 1,
 });
 
 router.post('/', validateToken, upload.array('photos', 5), validateUploadPost, uploadPostController)
 router.get('/', validateToken, getPostsController)
-router.get('/:post_id/download', downloadPostController)
+router.get('/:postId/download', downloadPostController)
 router.get('/tags', getTagsController)
 router.post('/:postId/like', limiter, validateToken, likeController)
 
