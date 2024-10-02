@@ -1,26 +1,34 @@
 const sharp = require("sharp");
 const InvalidBody = require("../exceptions/InvalidBody");
 const errorHandler = require("../tools/errorHandler");
-const { json } = require("express");
+
+const isValidPassword = (pass) => {
+
+  if (String(pass).length < 9) {
+    throw new InvalidBody(
+      "La contraseña debe ser mayor o igual a 9"
+    );
+  }
+}
+
+const isValidEmail = (email) => {
+  const regex_ = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!regex_.test(String(email))) {
+    throw new InvalidBody('El correo electronico no es correcto')
+  }
+}
+
+
 
 const validateSign = (req, res, next) => {
   const { user, password } = req.body;
   try {
-    if (!user || !password) {
-      throw new InvalidBody(
-        "Faltan  claves"
-      );
-    }
-    if (user.trim() === "" || password.toString().length == 0) {
+    if (String(user).trim() === "" || String(password).trim() === '') {
       throw new InvalidBody(
         "Los campos no pueden estar vacios"
       );
     }
-    if (password.toString().length < 9) {
-      throw new InvalidBody(
-        "la contraseña debe ser mayor o igual a 9"
-      );
-    }
+    isValidPassword(password)
     next();
   } catch (e) {
     errorHandler(e, req, res)
@@ -29,32 +37,17 @@ const validateSign = (req, res, next) => {
 
 const validateCreateUser = (req, res, next) => {
   const { username, password, email, firstNames, lastNames } = req.body;
-  console.log(req.body);
   try {
-    if (
-      [username, firstNames, lastNames, email, password].includes(undefined)
-    ) {
-      throw new InvalidBody('Faltan keys');
-    }
 
-    [username, firstNames, lastNames, email, password].forEach((d) => {
-      if (d.trim() === "") {
+    [username, firstNames, lastNames, email, password].forEach((v) => {
+      if (String(v).trim() === "") {
         throw new InvalidBody(
           "Los campos no pueden estar vacios"
         );
       }
     });
-
-    const regex_ = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!regex_.test(email)) {
-      throw new InvalidBody('El correo electronico no es correcto')
-    }
-
-    if (password.toString().length < 9) {
-      throw new InvalidBody(
-        "la contraseña debe ser mayor o igual a 9"
-      );
-    }
+    isValidEmail(email)
+    isValidPassword(password)
     next();
   } catch (e) {
     errorHandler(e, req, res)
@@ -63,20 +56,16 @@ const validateCreateUser = (req, res, next) => {
 
 const validateUploadPost = async (req, res, next) => {
   try {
-
     let photos = req.files
-
     if (!photos) {
       throw new InvalidBody("No se encuentran fotos para subir");
     }
-
     if (!photos.length) {
       photos = [photos]
     }
     if (photos.length > 5) {
       throw new InvalidBody('Solo se puede un maximo de 5 fotos')
     }
-
     let sizeTotal = 0
     for (let f of photos) {
       sizeTotal += f.size
@@ -84,20 +73,16 @@ const validateUploadPost = async (req, res, next) => {
         throw new InvalidBody('Solo debe de subir archivos de tipo jpg, png, jpeg')
       }
       if (sizeTotal > 20000000) {
-        throw new Error('Error: El tamaño supera 20mb')
+        throw new InvalidBody('Error: El tamaño supera 20mb')
       }
-      const metadata = await sharp(f.buffer).metadata()
-      console.log(metadata);
-      if (!(metadata.width >= 2739 && metadata.height >= 1826)) {
-        throw new InvalidBody('Porfavor sube minimo imagenes de 5MP')
-      }
+      const { width, height } = await sharp(f.buffer).metadata()
 
+      if ((width * height) >= 1000000) {
+        throw new InvalidBody('Error: La imagen debe tener un tamaño mínimo de 1 MP. Por favor, sube una imagen con dimensiones de al menos 2739 x 1826 píxeles.')
+      }
     }
-
-    //tags
     const { tags } = req.body
     if (tags) {
-
       const tagsArrayJson = JSON.parse(tags)
       for (let i = 0; i < tagsArrayJson.length; i++) {
         if (!Array.isArray(tagsArrayJson[i])) {
@@ -106,7 +91,6 @@ const validateUploadPost = async (req, res, next) => {
       }
       req.body.tags = tagsArrayJson
     }
-
     next()
   } catch (e) {
     errorHandler(e, req, res)
@@ -114,23 +98,38 @@ const validateUploadPost = async (req, res, next) => {
 };
 
 
-
-
-
 const validateUpdateUser = (req, res, next) => {
   try {
-    const keys_valids = ['city', 'country', 'first_name', 'last_name']
-
-    for (const k in req.body) {
-      if (!keys_valids.includes(k)) {
+    const keysValids = ['city', 'country', 'firstName', 'lastName']
+    const keys = Object.keys(req.body)
+    for (let i = 0; i < keys.length; i++) {
+      if (!keysValids.includes(keys[i])) {
         throw new InvalidBody('propiedades incorrectas por favor suministre las propiedades correctas')
       }
-      if (req.body[k].trim() === '') {
-        throw new InvalidBody('No deben de haber propiedades con datos vacios')
+      if (req.body[keys[i]].trim() === '') {
+        throw new InvalidBody('No deben de haber propiedades vacias')
       }
     }
+    next()
+  } catch (e) {
+    errorHandler(e, req, res)
+  }
+}
 
+const passwordValidation = (req, res, next) => {
+  try {
+    const { password } = req.body
+    isValidPassword(password)
+    next()
+  } catch (e) {
+    errorHandler(e, req, res)
+  }
+}
 
+const emailValidation = (req, res, next) => {
+  try {
+    const { email } = req.body
+    isValidEmail(email)
     next()
   } catch (e) {
     errorHandler(e, req, res)
@@ -141,5 +140,7 @@ module.exports = {
   validateSign,
   validateCreateUser,
   validateUploadPost,
-  validateUpdateUser
+  validateUpdateUser,
+  passwordValidation,
+  emailValidation
 };
