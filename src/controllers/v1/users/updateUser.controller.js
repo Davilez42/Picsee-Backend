@@ -4,8 +4,8 @@ const updateUserController = async (req, res) => {
   //* controller for update info user
 
   try {
-    const { id_user } = req
-    await userRepository.update(id_user, { ...req.body })
+    const { userId } = req
+    await userRepository.update(userId, { ...req.body })
     res.sendStatus(204)
   } catch (e) {
     errorHandler(e, req, res)

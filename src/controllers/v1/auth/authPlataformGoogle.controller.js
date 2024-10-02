@@ -1,12 +1,13 @@
 const { userRepository } = require("../../../database/dependencies");
-const genareteToken = require("../../../tools/generateToken.tool");
 const { validateCredentialsGoogle } = require("../../../services/googleTokenValidation/validationTokenGoogle");
 const errorHandler = require("../../../tools/errorHandler");
 const InvalidBody = require("../../../exceptions/InvalidBody");
-require("dotenv").config();
+const { sign } = require("jsonwebtoken");
+const { v4: uuid } = require('uuid');
+const generatePassword = require("../../../tools/generatePassword");
+const { hashData } = require('../../../tools/encrypt.tool')
 
 const authPlatformGoogleController = async (req, res) => {
-  // * controller for auth user with google
 
   try {
 
@@ -19,35 +20,32 @@ const authPlatformGoogleController = async (req, res) => {
     const { picture, name, given_name, email } = await validateCredentialsGoogle(credential)
 
     const user = {
+      userId: uuid(),
       username: name,
       email,
-      first_names: " ",
-      last_names: " ",
-      password: "true",
+      firstNames: given_name,
+      lastNames: " ",
+      password: '',
+      urlAvatar: picture
     };
 
-    let user_ = await userRepository.exist(email);
+    let userFound = await userRepository.find(email);
 
-    if (!user_) {
-      const insertId = await userRepository.create(user);
-      await userRepository.updateAvatar(insertId, { url: picture, id_kitio: null })
-      user.id_user = insertId;
-      user.url_avatar = picture
-    } else {
-      user.id_user = user_.id_user
-      user.url_avatar = user_.url
+    if (!userFound) {
+      user.password = await hashData(generatePassword(30))
+      await userRepository.create(user);
     }
 
-    const token = genareteToken(user);
+    const accessToken = sign(user, process.env.JWT_KEY_SECRET, { expiresIn: '2h' });
 
     res.status(200).json({
-      state: 'ok', token,
-      id_user: user.id_user,
-      username: user.username,
-      email,
-      url_avatar: user.url_avatar,
-      password: true,
-      token
+      state: 'ok',
+      data: {
+        userId: user.userId,
+        urlAvatar: user.urlAvatar,
+        username: user.username,
+        token: accessToken
+      }
     });
   } catch (e) {
     errorHandler(e, req, res)

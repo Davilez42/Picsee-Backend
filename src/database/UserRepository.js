@@ -8,23 +8,19 @@ class UserRepository {
     this.pool = pool
   }
   async find(user) {
-    const dbConnection = await this.pool.connect();
+    const client = await this.pool.connect();
     try {
-      const respDb = await dbConnection.query(`SELECT 
+      const respDb = await client.query(`SELECT 
         user_id as "userId",
         url_avatar as "urlAvatar",
         username 
         FROM users us
         WHERE us.deleted = FALSE  and (us.username = $1 or us.email = $1 or us.user_id = $1)`, [user])
-
-      if (!respDb.rows[0]) {
-        throw new UserNotFound(user)
-      }
-      return respDb.rows[0];
+      return respDb.rows.length === 0 ? null : respDb.rows[0];
     } catch (error) {
       throw error
     } finally {
-      dbConnection.release();
+      client.release();
     }
 
   };
@@ -33,7 +29,7 @@ class UserRepository {
     const client = await this.pool.connect();
 
     try {
-      const respDb = await client.query(
+      await client.query(
         `INSERT INTO users (user_id,username,first_name,last_name,email,password,url_avatar,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING user_id`,
         [
           user.userId,
@@ -46,7 +42,6 @@ class UserRepository {
           new Date().toISOString(),
         ]
       );
-      return respDb.rows[0].user_id;
     } catch (e) {
       throw e.code === '23505' ? new DataAlreadyExist(e.constraint.split('idx_')[1]) : e
     }
@@ -56,12 +51,10 @@ class UserRepository {
   };
 
   async delete(userId) {
-    const dbConnection = await this.pool.connect();
+    const client = await this.pool.connect();
     try {
 
-      const respDb = await dbConnection.query(`UPDATE users SET deleted = FALSE where user_id = ${userId}`);
-
-      dbConnection.release();
+      const respDb = await client.query(`UPDATE users SET deleted = FALSE where user_id = ${userId}`);
 
       if (respDb.rowCount === 0) {
         throw new UserNotFound(userId)
@@ -69,36 +62,41 @@ class UserRepository {
     } catch (error) {
       throw error
     } finally {
-      dbConnection.release();
+      client.release();
     }
 
 
   };
 
   async update(userId, data) {
-    const dbConnection = await this.pool.connect()
+    const client = await this.pool.connect()
     try {
-      const dataUpdate = []
-      for (const k in data) {
-        dataUpdate.push(`${k} = '${data[k]}'`)
+      const keys = Object.keys(data)
+      const params = []
+      const values = [userId]
+
+      for (let i = 0; i < keys.length; i++) {
+        params.push(`${keys[i]} = $${values.length + 1}`)
+        values.push(data[keys[i]])
       }
-      const respDb = await dbConnection.query(`UPDATE users SET ${dataUpdate.join(',')} WHERE user_id and deleted = FALSE = $1`, [userId])
+      console.log(params, values);
+      const respDb = await client.query(`UPDATE users SET ${params.join(',')} WHERE user_id = $1 and deleted = FALSE`, values)
 
       if (respDb.rowCount <= 0) {
-        throw new UserNotFound(id_user)
+        throw new UserNotFound(userId)
       }
 
     } catch (error) {
       throw error
     } finally {
-      dbConnection.release();
+      client.release();
     }
   }
 
   async findCredentials(user) {
-    const dbConnection = await this.pool.connect();
+    const client = await this.pool.connect();
     try {
-      const respDb = await dbConnection.query(`
+      const respDb = await client.query(`
                             SELECT 
                             us.user_id as "userId",
                             us.url_avatar as "urlAvatar",
@@ -111,7 +109,7 @@ class UserRepository {
     } catch (error) {
       throw error
     } finally {
-      dbConnection.release();
+      client.release();
     }
   }
 }

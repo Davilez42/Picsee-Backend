@@ -96,7 +96,7 @@ class PostRepository {
           JOIN images img on img.post_id = p.post_id
           LEFT join post_tags pt on pt.post_id = p.post_id
           LEFT join tags t on pt.tag_id = t.tag_id
-          LEFT join likes lk on lk.post_id = p.post_id and lk.user_id = '${externalId}'
+          LEFT join likes lk on lk.post_id = p.post_id and lk.user_id = '${externalId}' and lk.deleted = FALSE
           WHERE p.visible = TRUE and us.state = TRUE  and us.deleted = FALSE ${params.length > 0 ? ` and (${params.join(' and ')}) ` : ''}
           GROUP by p.post_id, us.user_id, us.username, us.url_avatar, img.url, img.format, lk.user_id
           ORDER by p.upload_at DESC 

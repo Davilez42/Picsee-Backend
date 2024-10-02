@@ -3,12 +3,13 @@ class TagRepository {
     this.pool = pool
   }
   async get() {
-    const dbconnection = await this.pool.connect(); // obtengo una conexion
-    const data = await dbconnection.query(`
+    const client = await this.pool.connect();
+    const data = await client.query(`
         SELECT tag.tag_id, tag.name
         FROM tags tag
-        order by name DESC`);
-    dbconnection.release();
+        ORDER BY use DESC
+        `);
+    client.release();
     return data.rows;
   };
 
